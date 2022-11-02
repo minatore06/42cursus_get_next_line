@@ -35,7 +35,7 @@ int	ft_strlcpy(char *dest, char const *src, unsigned int size)
 	}
 	if (size)
 		dest[len] = '\0';
-	return (ft_strlen((char *)src));
+	return (ft_strlen(src));
 }
 
 int	ft_strlcat(char *dest, const char *src, unsigned int size)
@@ -45,7 +45,7 @@ int	ft_strlcat(char *dest, const char *src, unsigned int size)
 	int	result;
 
 	lend = ft_strlen(dest);
-	i = ft_strlen((char *)src);
+	i = ft_strlen(src);
 	result = lend + i;
 	if (size == 0 || size <= (unsigned int)lend)
 		return (size + i);
@@ -58,7 +58,7 @@ char	*ft_strdup(const char *s)
 	char	*str;
 	int		i;
 
-	i = ft_strlen((char *)s);
+	i = ft_strlen(s);
 	str = malloc((i + 1) * sizeof(char));
 	if (str)
 		ft_strlcpy(str, s, i + 1);
@@ -70,7 +70,14 @@ char	*ft_strjoin(const char *s1, const char *s2)
 	int		len;
 	char	*str;
 
-	len = ft_strlen((char *)s1) + ft_strlen((char *)s2) + 1;
+	if (!s1)
+	{
+		str = malloc(ft_strlen(s2) + 1);
+		if (str)
+			ft_strlcpy(str, s2, ft_strlen(s2) + 1);
+		return (str);
+	}
+	len = ft_strlen(s1) + ft_strlen(s2) + 1;
 	str = malloc(len);
 	if (str)
 	{

@@ -45,40 +45,53 @@ char	*get_next_line(int fd)
 	char	*line;
 	static char	*safe;
 
+	line = 0;
 	if (safe)
 	{
-		line = ft_strdup(safe);
-		free(safe);
-		i = ft_strchr(line, '\n');
-		if (i != -1)
+		if (*safe)
 		{
-			safe = ft_strdup(&line[i + 1]);
-			line[i + 1] = 0;
-			return (line);
+			line = ft_strdup(safe);
+			i = ft_strchr(line, '\n');
+			free(safe);
+			safe = 0;
+			if (i != -1)
+			{
+				safe = ft_strdup(&line[i + 1]);
+				line[i + 1] = 0;
+				return (line);
+			}
 		}
 	}
-	else
-		line = malloc(1);
 	buffer = malloc(sizeof(char) * (BUFFER_SIZE + 1));
 	if (!buffer)       
 	{
 		free(buffer);
 		return (NULL);
 	}
-	resetbfr(&buffer, BUFFER_SIZE + 1);
 	x = 1;
 	while (x > 0)
 	{
+		resetbfr(&buffer, BUFFER_SIZE + 1);
 		x = read(fd, buffer, BUFFER_SIZE);
-		if (x < 0)
+		if (x <= 0)
 		{
 			free(buffer);
-			return (NULL);
+			if (!line)
+				line = NULL;
+			return (line);
 		}
+		buffer[BUFFER_SIZE] = 0;
 		i = ft_strchr(buffer, '\n');
+		if (i == -1)
+			i = ft_strchr(buffer, -1);
 		if (i != -1)
 		{
-			safe = ft_strdup(&buffer[i + 1]);
+			if (buffer[i + 1])
+			{
+				if (safe)
+					free(safe);
+				safe = ft_strdup(&buffer[i + 1]);
+			}
 			buffer[i + 1] = 0;
 			line = ft_strjoin(line, buffer);
 			break ;
