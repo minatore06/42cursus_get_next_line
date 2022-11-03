@@ -21,4 +21,6 @@ int	ft_strlcat(char *dest, const char *src, unsigned int size);
 char	*ft_strdup(const char *s);
 char	*ft_strjoin(const char *s1, const char *s2);
 
+void	get_all_ptr(char *s);
+
 #endif
