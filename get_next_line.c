@@ -15,7 +15,7 @@
 
 #include <stdio.h>
 
-void	resetbfr(char **buffer, unsigned int size)
+static void	resetbfr(char **buffer, unsigned int size)
 {
 	while(size-- > 0)
 		(*buffer)[size] = 0;
@@ -37,6 +37,59 @@ int	ft_strchr(const char *s, int c)
 	return (-1);
 }
 
+static char	*past_check(char **safe)
+{
+	int	i;
+	char	*line;
+
+	i = 0;
+	if (*safe)
+	{
+		if (**safe)
+		{
+			line = ft_strdup(*safe);
+			i = ft_strchr(line, '\n');
+			free(*safe);
+			safe = 0;
+			if (i != -1)
+			{
+				*safe = ft_strdup(&line[i + 1]);
+				line[i + 1] = 0;
+				return (line);
+			}
+		}
+	}
+	return (NULL);
+}
+
+int	get_line_save_rest(int i, int x, char **buffer, char **safe, char **line)
+{
+	if (x <= 0)
+	{
+		free(*buffer);
+		if (!*line)
+			*line = NULL;
+		return (-1);
+	}
+	*buffer[BUFFER_SIZE] = 0;
+	i = ft_strchr(*buffer, '\n');
+	if (i == -1)
+		i = ft_strchr(*buffer, -1);
+	if (i != -1)
+	{
+		if ((*buffer)[i + 1])
+		{
+			if (*safe)
+				free(*safe);
+			*safe = ft_strdup(&(*buffer)[i + 1]);
+		}
+		(*buffer)[i + 1] = 0;
+		*line = ft_strjoin(*line, *buffer);
+		return (1);
+	}
+	return (0);
+}
+
 char	*get_next_line(int fd)
 {
 	int		i;
@@ -45,26 +98,14 @@ char	*get_next_line(int fd)
 	char	*line;
 	static char	*safe;
 
-	line = 0;
-	if (safe)
-	{
-		if (*safe)
-		{
-			line = ft_strdup(safe);
-			i = ft_strchr(line, '\n');
-			free(safe);
-			safe = 0;
-			if (i != -1)
-			{
-				safe = ft_strdup(&line[i + 1]);
-				line[i + 1] = 0;
-				return (line);
-			}
-		}
-	}
+	line = past_check(&safe);
+	if (line)
+		return (line);
 	buffer = malloc(sizeof(char) * (BUFFER_SIZE + 1));
 	if (!buffer)       
 	{
+		if (line)
+			free(line);
 		free(buffer);
 		return (NULL);
 	}
@@ -73,29 +114,11 @@ char	*get_next_line(int fd)
 	{
 		resetbfr(&buffer, BUFFER_SIZE + 1);
 		x = read(fd, buffer, BUFFER_SIZE);
-		if (x <= 0)
-		{
-			free(buffer);
-			if (!line)
-				line = NULL;
-			return (line);
-		}
-		buffer[BUFFER_SIZE] = 0;
-		i = ft_strchr(buffer, '\n');
+		i = get_line_save_rest(0, x, &buffer, &safe, &line);
+		if (i == 1)
+			break;
 		if (i == -1)
-			i = ft_strchr(buffer, -1);
-		if (i != -1)
-		{
-			if (buffer[i + 1])
-			{
-				if (safe)
-					free(safe);
-				safe = ft_strdup(&buffer[i + 1]);
-			}
-			buffer[i + 1] = 0;
-			line = ft_strjoin(line, buffer);
-			break ;
-		}
+			return (line);
 		line = ft_strjoin(line, buffer);
 	}
 	free(buffer);
