@@ -102,6 +102,8 @@ char	*get_next_line(int fd)
 	char		*line;
 	static char	*safe[4096];
 
+	if (fd < 0 || BUFFER_SIZE <= 0)
+		return (NULL);
 	line = 0;
 	if (safe[fd])
 	{
