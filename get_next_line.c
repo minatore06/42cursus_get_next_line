@@ -13,15 +13,7 @@
 #include <unistd.h>
 #include "get_next_line.h"
 
-#include <stdio.h>
-
-void	resetbfr(char **buffer, unsigned int size)
-{
-	while(size-- > 0)
-		(*buffer)[size] = 0;
-}
-
-int	ft_strchr(const char *s, int c)
+static int	ft_strchr(const char *s, int c)
 {
 	int	i;
 
@@ -37,7 +29,7 @@ int	ft_strchr(const char *s, int c)
 	return (-1);
 }
 
-int	get_line_save_rest(char **safe, char **line, char **buffer)
+static int	get_line_save_rest(char **safe, char **line, char **buffer)
 {
 	int	i;
 
@@ -60,13 +52,32 @@ int	get_line_save_rest(char **safe, char **line, char **buffer)
 	return (0);
 }
 
-char	*reading(int i, int fd, char **safe, char *line)
+static char	*reading(int *x, int fd, char **buffer, char *line)
 {
+	int	i;
+
+	i = 0;
+	while (i < BUFFER_SIZE)
+		(*buffer)[i++] = 0;
+	*x = read(fd, *buffer, BUFFER_SIZE);
+	if (*x <= 0)
+	{
+		free(*buffer);
+		if (!line)
+			line = NULL;
+		return (line);
+	}
+	(*buffer)[BUFFER_SIZE] = 0;
+	return (*buffer);
+}
+
+static char	*make_line(int i, int fd, char **safe, char *line)
+{
+	int		x;
 	char	*buffer;
-	int	x;
 
 	buffer = malloc(sizeof(char) * (BUFFER_SIZE + 1));
-	if (!buffer)       
+	if (!buffer)
 	{
 		free(buffer);
 		return (NULL);
@@ -74,19 +85,12 @@ char	*reading(int i, int fd, char **safe, char *line)
 	x = 1;
 	while (x > 0)
 	{
-		resetbfr(&buffer, BUFFER_SIZE + 1);
-		x = read(fd, buffer, BUFFER_SIZE);
+		buffer = reading(&x, fd, &buffer, line);
 		if (x <= 0)
-		{
-			free(buffer);
-			if (!line)
-				line = NULL;
-			return (line);
-		}
-		buffer[BUFFER_SIZE] = 0;
+			return (buffer);
 		i = get_line_save_rest(safe, &line, &buffer);
 		if (i)
-			break;
+			break ;
 	}
 	free(buffer);
 	return (line);
@@ -94,10 +98,12 @@ char	*reading(int i, int fd, char **safe, char *line)
 
 char	*get_next_line(int fd)
 {
-	int		i;
-	char	*line;
+	int			i;
+	char		*line;
 	static char	*safe;
 
+	if (fd < 0 || BUFFER_SIZE <= 0)
+		return (NULL);
 	line = 0;
 	if (safe)
 	{
@@ -115,6 +121,5 @@ char	*get_next_line(int fd)
 			}
 		}
 	}
-	return (reading(0, fd, &safe, line));
+	return (make_line(0, fd, &safe, line));
 }
-

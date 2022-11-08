@@ -10,14 +10,18 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef GET_NEXT_LINE_H
-# define GET_NEXT_LINE_H
+#ifndef GET_NEXT_LINE_BONUS_H
+# define GET_NEXT_LINE_BONUS_H
 
-typedef struct s_lastread
-{
-	int	fd;
-	int	lastbr;
-	struct s_lastread	*next;
-}	t_lastread;
+# ifndef BUFFER_SIZE
+#  define BUFFER_SIZE 1
+# endif
+
+char	*get_next_line(int fd);
+int		ft_strlen(const char *str);
+int		ft_strlcpy(char *dest, char const *src, unsigned int size);
+int		ft_strlcat(char *dest, const char *src, unsigned int size);
+char	*ft_strdup(const char *s);
+char	*ft_strjoin(const char *s1, const char *s2);
 
 #endif
