@@ -63,7 +63,9 @@ static char	*reading(int *x, int fd, char **buffer, char *line)
 	if (*x <= 0)
 	{
 		free(*buffer);
-		if (!line)
+		if (line && *x == -1)
+			free(line);
+		if (!line || *x == -1)
 			line = NULL;
 		return (line);
 	}
